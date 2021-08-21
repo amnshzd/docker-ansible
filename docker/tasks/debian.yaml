@@ -1,0 +1,49 @@
+---
+     - name: test Ubuntu target hosts
+       ping:
+       tags:
+         - tests
+
+     - name: update apt cache
+       apt:
+        update_cache: yes
+       tags:
+         - tests
+
+     - name: find docker installation
+       shell: "which docker"
+       ignore_errors: yes
+       register: result
+       tags:
+         - init
+         - docker
+
+     - name: end host if docker exist
+       meta: end_host
+       when: result.rc == 0
+
+
+     - name: install needed package
+       apt:
+         name: "{{ item }}"
+         state: present
+       loop:
+         - "{{ packages_to_install }}"
+
+     - name: Add Docker GPG key
+       apt_key:
+         url: https://download.docker.com/linux/ubuntu/gpg
+
+     - name: Add Docker APT repository
+       apt_repository:
+         repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+
+     - name: Install Docker CE
+       apt:
+         name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+         update_cache: yes
+
+     - name: print Docker Info
+       debug:
+         shell: "/usr/bin/uptime --version"
+         register: result 

@@ -1,0 +1,48 @@
+---
+
+     - name: test REDHAT target hosts
+       ping:
+       tags:
+         - tests
+
+     - name: update yum cache
+       yum:
+        update_cache: yes
+       tags:
+         - tests
+
+     - name: find docker installation on Redhat based
+       shell: "which docker"
+       ignore_errors: yes
+       register: result
+       tags:
+         - init
+         - docker
+
+     - name: end host if docker exist
+       meta: end_host
+       when: result.rc == 0
+
+
+     - name: install needed package
+       yum:
+         name: "{{ item }}"
+         state: present
+       loop:
+         - "{{ packages_to_install }}"
+
+     - name: Add Docker APT repository
+       yum_repository:
+             name: epel
+             description: EPEL YUM repo
+             baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+
+     - name: Install Docker CE
+       yum:
+         name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+         update_cache: yes
+
+     - name: print Docker Info
+       debug:
+         shell: "/usr/bin/docker --version"
+         register: result 

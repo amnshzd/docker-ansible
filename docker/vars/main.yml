@@ -1,0 +1,9 @@
+---
+# vars file for docker
+     packages_to_install:
+       - apt-transport-https
+       - ca-certificates
+       - gnupg2
+       - curl
+       - software-properties-common
+
